@@ -32,7 +32,7 @@ class AccessControlIntegrationTest extends IntegrationTest {
         .get(webGoatUrlConfig.url("access-control/users-admin-fix"))
         .then()
         .statusCode(HttpStatus.SC_FORBIDDEN);
-        //update commit
+        //update commit 2
 
     // create user
     var userTemplate =
