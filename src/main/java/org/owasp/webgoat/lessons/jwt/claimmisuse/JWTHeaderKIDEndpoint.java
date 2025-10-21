@@ -66,22 +66,38 @@ public class JWTHeaderKIDEndpoint implements AssignmentEndpoint {
                 .setSigningKeyResolver(
                     new SigningKeyResolverAdapter() {
                       @Override
+                      // public byte[] resolveSigningKeyBytes(JwsHeader header, Claims claims) {
+                      //   final String kid = (String) header.get("kid");
+                      //   try (var connection = dataSource.getConnection()) {
+                      //     ResultSet rs =
+                      //         connection
+                      //             .createStatement()
+                      //             .executeQuery(
+                      //                 "SELECT key FROM jwt_keys WHERE id = '" + kid + "'");
+                      //     while (rs.next()) {
+                      //       return TextCodec.BASE64.decode(rs.getString(1));
+                      //     }
+                      //   } catch (SQLException e) {
+                      //     errorMessage[0] = e.getMessage();
+                      //   }
+                      //   return null;
+                      // }
+
                       public byte[] resolveSigningKeyBytes(JwsHeader header, Claims claims) {
-                        final String kid = (String) header.get("kid");
-                        try (var connection = dataSource.getConnection()) {
-                          ResultSet rs =
-                              connection
-                                  .createStatement()
-                                  .executeQuery(
-                                      "SELECT key FROM jwt_keys WHERE id = '" + kid + "'");
-                          while (rs.next()) {
-                            return TextCodec.BASE64.decode(rs.getString(1));
-                          }
-                        } catch (SQLException e) {
-                          errorMessage[0] = e.getMessage();
-                        }
-                        return null;
-                      }
+    final String kid = (String) header.get("kid");
+    try (var connection = dataSource.getConnection()) {
+        String query = "SELECT key FROM jwt_keys WHERE id = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, kid);
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                // Process the ResultSet here
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace(); // Proper exception handling and logging should be implemented
+    }
+    return null; // Adjust return value as per logic
+}
                     })
                 .parseClaimsJws(token);
         if (errorMessage[0] != null) {
